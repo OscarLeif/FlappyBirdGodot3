@@ -1,41 +1,50 @@
 extends Node
 
-export(float) var scroll_speed = 2.0
-var sprite_size = Vector2()
-var initial_positions = []
+# Speed at which the sprites will scroll
+export var scroll_speed : float = 2.0
+
+# Width of each sprite, to be determined dynamically
+var sprite_width : float = 0.0
+var firstSpritePos: Vector3
+
+# List to hold references to the Sprite3D nodes
+var sprites = []
 
 func _ready():
-	if get_child_count() > 0:
-		var first_sprite = get_child(0) as Sprite3D
-		sprite_size = first_sprite.texture.get_size() # Read the size from the first sprite's texture
+	# Gather all Sprite3D children
+	for child in get_children():
+		if child is Sprite3D:
+			sprites.append(child)
+			
+	# Ensure there is at least one Sprite3D child
+	if sprites.size() > 0:
+		call_deferred("calculate_sprite_size")
+				
+		
+func calculate_sprite_size():
+	# Get the width of the first child after ensuring it is fully initialized
+	sprite_width = sprites[0].get_aabb().size.x
+	print("Sprite width determined as: ", sprite_width)		
 	
-	# Store the initial positions of the sprites
-	for i in range(get_child_count()):
-		var sprite = get_child(i) as Sprite3D
-		initial_positions.append(sprite.transform.origin)
-	
-	# Position the sprites in a line initially
-	for i in range(get_child_count()):
-		var sprite = get_child(i) as Sprite3D
-		sprite.transform.origin.x = initial_positions[i].x
-
+	var leftmost_sprite = sprites[0]
+	for s in sprites:
+		if s.translation.x < leftmost_sprite.translation.x:
+			leftmost_sprite = s
+	firstSpritePos = leftmost_sprite.translation
+			
 func _process(delta):
-	for i in range(get_child_count()):
-		var sprite = get_child(i) as Sprite3D
-		sprite.transform.origin.x -= scroll_speed * delta
+	for sprite in sprites:
+		# Move each sprite to the left
+		sprite.translation.x -= scroll_speed * delta
 
-		# Check if the sprite has moved past the leftmost initial position
-		if sprite.transform.origin.x < initial_positions[0].x:
-			# Find the rightmost sprite's position
-			var rightmost_position = find_rightmost_position()
-			# Move this sprite to the right of the rightmost sprite
-			sprite.transform.origin.x = rightmost_position.x + sprite_size.x
+		# If a sprite has moved out of the screen, reposition it to the right end
+		if sprite.translation.x < firstSpritePos.x:
+			print("Ok we should move just one sprite")
+			# Find the rightmost sprite
+			var rightmost_sprite = sprites[0]
+			for s in sprites:
+				if s.translation.x > rightmost_sprite.translation.x:
+					rightmost_sprite = s
 
-# Helper function to find the rightmost sprite's position
-func find_rightmost_position() -> Vector3:
-	var rightmost_position = initial_positions[0]
-	for i in range(1, get_child_count()):
-		var sprite = get_child(i) as Sprite3D
-		if sprite.transform.origin.x > rightmost_position.x:
-			rightmost_position = sprite.transform.origin
-	return rightmost_position
+			# Reposition the current sprite to the right of the rightmost sprite
+			sprite.translation.x = rightmost_sprite.translation.x + sprite_width

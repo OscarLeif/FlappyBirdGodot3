@@ -14,6 +14,12 @@ config/name="Flappy Bird AtaGames"
 run/main_scene="res://Scenes/MainMenu.tscn"
 config/icon="res://icon.png"
 
+[global]
+
+etc2=true
+etc=true
+import=true
+
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true
