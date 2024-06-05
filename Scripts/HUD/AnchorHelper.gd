@@ -28,7 +28,7 @@ func _process(delta):
 	var isPortrait = viewport_size.x < viewport_size.y
 	
 #	print("Screen X: " + str(screen_size.x) + " Y: "+ str(screen_size.y))
-	print("Viewport X: " + str(viewport_size.x) + " Y: "+ str(viewport_size.y))
+#	print("Viewport X: " + str(viewport_size.x) + " Y: "+ str(viewport_size.y))
 	if isPortrait:
 		setupAnchor(anchor_portrait)
 	else:
@@ -45,7 +45,7 @@ func setupAnchor(anchor_values: Array):
 		control_node.margin_top = 0
 		control_node.margin_right=0
 		control_node.margin_bottom=0
-		print("Ok here setup the anchor and sizes")	
+#		print("Ok here setup the anchor and sizes")	
 	else:
 		print("control_node is null")
 		control_node = $"."

@@ -14,10 +14,14 @@ config/name="Flappy Bird AtaGames"
 run/main_scene="res://Scenes/MainMenu.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+TransitionKit="*res://Scenes/TransitionKit.tscn"
+
 [display]
 
-window/size/width=375
-window/size/height=667
+window/size/width=667
+window/size/height=375
 window/handheld/orientation="sensor"
 
 [editor_plugins]
