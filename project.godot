@@ -22,6 +22,7 @@ TransitionKit="*res://Scenes/TransitionKit.tscn"
 
 window/size/width=667
 window/size/height=375
+window/size/always_on_top=true
 window/handheld/orientation="sensor"
 
 [editor_plugins]
