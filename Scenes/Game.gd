@@ -1,5 +1,4 @@
 extends Spatial
-
 export(NodePath) var sprite_path
 export(NodePath) var Player_path
 
@@ -15,6 +14,15 @@ onready var camera:Camera = get_node("Camera")
 var sprite3d_width:float
 var Player: RigidBody
 
+enum GameState {
+	WAIT,
+	PLAYING,
+	DEAD
+}
+
+var game_state = GameState.WAIT
+
+# Variable to hold the current state
 
 func _ready():
 	var sprite_width = sprite3D.texture.get_size().x * sprite3D.pixel_size #return texture to world size
@@ -39,13 +47,58 @@ func _ready():
 #		NodeLand.add_child(right_sprite)
 #		sprite_copies.append(right_sprite)		
 	Player = get_node(Player_path)
+	
+func _input(event):
+	if event is InputEventMouseButton and event.is_pressed():
+		if game_state==GameState.WAIT:
+			change_game_state(GameState.PLAYING)
+		elif game_state==GameState.PLAYING:
+			Player.linear_velocity = Vector3(1,0,0)
+			Player.apply_central_impulse(Vector3(0,5,0))
+			Player.angular_velocity = Vector3(0,0,4.0)
+		
+func change_game_state(new_state):
+	game_state = new_state
+	match game_state:
+		GameState.WAIT:
+			print("State change to WAIT")
+		GameState.PLAYING:
+			Player.gravity_scale = 1		
+			Player.linear_velocity=Vector3(1,0,0)	
+			print("State change to Playing")
+		GameState.DEAD:
+			print("State Change to DEAD")
+
 
 func _process(delta):
 	# Core game move the player to the right
-	Player.translation.x += delta * playerSpeed
+	
+	if game_state== GameState.WAIT:
+		Player.translation.x += delta * playerSpeed
+	elif game_state == GameState.PLAYING:
+		
+		if Player.linear_velocity.y>0:
+			if Player.rotation.z > deg2rad(30):
+				Player.angular_velocity= Vector3(0,0,0)
+		if Player.linear_velocity.y <0:
+			if Player.rotation.z < deg2rad(-90):
+				Player.angular_velocity= Vector3.ZERO;
+			else:
+				Player.angular_velocity = Vector3(0,0,-2)
+		pass
 	
 	_cameraController()
 	_groundController()
+	
+	var playerVel = Player.linear_velocity
+	
+	
+	
+#	if Player.rotation.z < deg2rad(-30):
+#		Player.rotation.z = deg2rad(-30)
+#	if Player.rotation.z > deg2rad(30):
+#		Player.rotation.z = deg2rad(30)		
+	
 	pass
 	
 func _cameraController():
