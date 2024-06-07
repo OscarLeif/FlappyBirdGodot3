@@ -8,6 +8,16 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Spatial",
+"class": "Game",
+"language": "GDScript",
+"path": "res://Scenes/Game.gd"
+} ]
+_global_script_class_icons={
+"Game": ""
+}
+
 [application]
 
 config/name="Flappy Bird AtaGames"
@@ -17,6 +27,7 @@ config/icon="res://icon.png"
 [autoload]
 
 TransitionKit="*res://Scenes/TransitionKit.tscn"
+Utils="*res://Scripts/utils.gd"
 
 [display]
 

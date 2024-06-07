@@ -1,5 +1,9 @@
 extends RigidBody
 
+#var Game = preload("res://Scenes/Game.gd")
+
+onready var GameManager:Game = Utils.get_main_node().get_node("Game")
+
 #Collision stuff should be handled here.
 # Called when the node enters the scene tree for the first time.
 func _ready():

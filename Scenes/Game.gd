@@ -1,4 +1,7 @@
 extends Spatial
+
+class_name Game
+
 export(NodePath) var sprite_path
 export(NodePath) var Player_path
 
@@ -9,7 +12,7 @@ export(int) var num_sprites_each_side = 4
 var sprite_copies = []
 onready var sprite3D: Sprite3D = get_node("LandController/Land0")
 onready var NodeLand:Node = get_node("LandController")
-onready var camera:Camera = get_node("Camera")
+onready var camera:Camera = get_node("camera")
 onready var pipeSpawnCointainer = get_node("PipeSpawner/Container")
 
 const scene_pipe = preload("res://Scenes/Objects/PipeObstacle.tscn")
@@ -19,6 +22,7 @@ onready var topRightSprite:Sprite3D = get_node("FourCorners/2")
 onready var buttomRightSprite:Sprite3D = get_node("FourCorners/3")
 onready var buttomLeftSprite:Sprite3D = get_node("FourCorners/4")
 
+onready var labelScore:Label=get_node("CanvasLayer/HUD/Label")
 
 export var pipe_minYSpawn:float = 1.5
 export var pipe_maxYSpawn:float = 4.2
@@ -29,6 +33,7 @@ export var centerRightScreen:Vector3
 var spawnCounter: int = 0
 
 export var nextSpawnPosition:Vector3
+var lastPipePos:Vector3
 
 enum GameState {
 	WAIT,
@@ -93,7 +98,7 @@ func _process(delta):
 	_groundController()
 	
 	if game_state== GameState.WAIT:
-#		Player.translation.x += delta * playerSpeed
+		Player.translation.x += delta * playerSpeed
 		pass
 	elif game_state == GameState.PLAYING:
 		
@@ -106,36 +111,32 @@ func _process(delta):
 			else:
 				Player.angular_velocity = Vector3(0,0,-2)
 				
-	if spawnCounter==0:
-		var new_pipe = scene_pipe.instance()
-		var pipeSpawn = Vector3(centerRightScreen.x, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
-		new_pipe.global_position = pipeSpawn
-		pipeSpawnCointainer.add_child(new_pipe)
-		spawnCounter += 1
-		nextSpawnPosition = Player.global_position
-		nextSpawnPosition.x += 2		
-		pass		
-	elif Player.global_position.x> nextSpawnPosition.x:
-		nextSpawnPosition = Player.global_position
-		var new_pipe = scene_pipe.instance()
-		var pipeSpawn = Vector3(centerRightScreen.x + 2, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
-		new_pipe.global_position = pipeSpawn
-		pipeSpawnCointainer.add_child(new_pipe)
-		nextSpawnPosition.x +=2
-		
-		pass
+		if spawnCounter==0:
+			var new_pipe = scene_pipe.instance()
+			var pipeSpawn = Vector3(centerRightScreen.x, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
+			new_pipe.global_position = pipeSpawn
+			lastPipePos = pipeSpawn
+			pipeSpawnCointainer.add_child(new_pipe)
+			spawnCounter += 1
+			nextSpawnPosition = Player.global_position
+			nextSpawnPosition.x += 1		
+			pass		
+		elif Player.global_position.x> nextSpawnPosition.x:
+			nextSpawnPosition = Player.global_position
+			var new_pipe = scene_pipe.instance()
+			var pipeSpawn = Vector3(lastPipePos.x + 2, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
+			lastPipePos = pipeSpawn
+			new_pipe.global_position = pipeSpawn
+			pipeSpawnCointainer.add_child(new_pipe)
+			nextSpawnPosition = Player.global_position
+			nextSpawnPosition.x +=1
+			
+			pass
 		
 	var playerVel = Player.linear_velocity
 	if playerVel.y < -4:
 		playerVel.y=-4
 		Player.linear_velocity = playerVel
-	
-	
-#	if Player.rotation.z < deg2rad(-30):
-#		Player.rotation.z = deg2rad(-30)
-#	if Player.rotation.z > deg2rad(30):
-#		Player.rotation.z = deg2rad(30)		
-	
 	pass
 	
 func _cameraController():
