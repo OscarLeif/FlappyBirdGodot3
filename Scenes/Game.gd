@@ -7,12 +7,28 @@ export(float) var playerSpeed = 1
 export(int) var num_sprites_each_side = 4
 
 var sprite_copies = []
-onready var sprite3D: Sprite3D = get_node("Land/Land0")
-onready var NodeLand:Node = get_node("Land")
+onready var sprite3D: Sprite3D = get_node("LandController/Land0")
+onready var NodeLand:Node = get_node("LandController")
 onready var camera:Camera = get_node("Camera")
+onready var pipeSpawnCointainer = get_node("PipeSpawner/Container")
+
+const scene_pipe = preload("res://Scenes/Objects/PipeObstacle.tscn")
+
+onready var topLeftSprite:Sprite3D = get_node("FourCorners/1")
+onready var topRightSprite:Sprite3D = get_node("FourCorners/2")
+onready var buttomRightSprite:Sprite3D = get_node("FourCorners/3")
+onready var buttomLeftSprite:Sprite3D = get_node("FourCorners/4")
+
+
+export var pipe_minYSpawn:float = 1.5
+export var pipe_maxYSpawn:float = 4.2
 
 var sprite3d_width:float
 var Player: RigidBody
+export var centerRightScreen:Vector3
+var spawnCounter: int = 0
+
+export var nextSpawnPosition:Vector3
 
 enum GameState {
 	WAIT,
@@ -48,13 +64,14 @@ func _ready():
 #		sprite_copies.append(right_sprite)		
 	Player = get_node(Player_path)
 	
+	
 func _input(event):
 	if event is InputEventMouseButton and event.is_pressed():
 		if game_state==GameState.WAIT:
 			change_game_state(GameState.PLAYING)
 		elif game_state==GameState.PLAYING:
 			Player.linear_velocity = Vector3(1,0,0)
-			Player.apply_central_impulse(Vector3(0,5,0))
+			Player.apply_central_impulse(Vector3(0,3,0))
 			Player.angular_velocity = Vector3(0,0,4.0)
 		
 func change_game_state(new_state):
@@ -72,9 +89,12 @@ func change_game_state(new_state):
 
 func _process(delta):
 	# Core game move the player to the right
+	_cameraController()
+	_groundController()
 	
 	if game_state== GameState.WAIT:
-		Player.translation.x += delta * playerSpeed
+#		Player.translation.x += delta * playerSpeed
+		pass
 	elif game_state == GameState.PLAYING:
 		
 		if Player.linear_velocity.y>0:
@@ -85,13 +105,30 @@ func _process(delta):
 				Player.angular_velocity= Vector3.ZERO;
 			else:
 				Player.angular_velocity = Vector3(0,0,-2)
+				
+	if spawnCounter==0:
+		var new_pipe = scene_pipe.instance()
+		var pipeSpawn = Vector3(centerRightScreen.x, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
+		new_pipe.global_position = pipeSpawn
+		pipeSpawnCointainer.add_child(new_pipe)
+		spawnCounter += 1
+		nextSpawnPosition = Player.global_position
+		nextSpawnPosition.x += 2		
+		pass		
+	elif Player.global_position.x> nextSpawnPosition.x:
+		nextSpawnPosition = Player.global_position
+		var new_pipe = scene_pipe.instance()
+		var pipeSpawn = Vector3(centerRightScreen.x + 2, rand_range(pipe_minYSpawn, pipe_maxYSpawn),0)
+		new_pipe.global_position = pipeSpawn
+		pipeSpawnCointainer.add_child(new_pipe)
+		nextSpawnPosition.x +=2
+		
 		pass
-	
-	_cameraController()
-	_groundController()
-	
+		
 	var playerVel = Player.linear_velocity
-	
+	if playerVel.y < -4:
+		playerVel.y=-4
+		Player.linear_velocity = playerVel
 	
 	
 #	if Player.rotation.z < deg2rad(-30):
@@ -123,10 +160,22 @@ func _groundController():
 	var camera_pos = camera.global_transform.origin
 	
 	# Calculate the corners in world space
-	var top_left = camera_pos + Vector3(-half_width, half_height, 0)
-	var top_right = camera_pos + Vector3(half_width, half_height, 0)
-	var bottom_left = camera_pos + Vector3(-half_width/2, -half_height, 0)
-	var bottom_right = camera_pos + Vector3(half_width, -half_height, 0)
+	var top_left = camera_pos + Vector3(-half_width/2, half_height/2, 0)
+	top_left.z=0	
+	var top_right = camera_pos + Vector3(half_width/2, half_height/2, 0)
+	top_right.z =0
+	var bottom_left = camera_pos + Vector3(-half_width/2, -half_height/2, 0)
+	bottom_left.z=0
+	var bottom_right = camera_pos + Vector3(half_width/2, -half_height/2, 0)
+	bottom_right.z=0
+	
+	topLeftSprite.global_position = top_left
+	topRightSprite.global_position = top_right
+	
+	buttomLeftSprite.global_position = bottom_left
+	buttomRightSprite.global_position = bottom_right
+	
+	centerRightScreen = (top_right+bottom_right)/2
 	
 #	print("Top Left: ", top_left)
 #	print("Top Right: ", top_right)

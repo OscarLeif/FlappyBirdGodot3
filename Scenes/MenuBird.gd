@@ -5,8 +5,6 @@ extends AnimatedSprite3D
 export var move_distance = 1.0   # Distance to move up and down
 export var move_time = 1.0       # Time to move up or down
 
-# Reference to the Tween node
-onready var tween = get_node("Tween")
 # Original position
 var original_position = Vector3()
 var up_position = Vector3()
